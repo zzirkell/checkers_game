@@ -1,10 +1,10 @@
-import math
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from CheckersEnv import CheckersEnv
+from Dummy import Dummy
 from LearningAgent import LearningAgent
+from copy import deepcopy
 
 env = CheckersEnv()
 agent = LearningAgent(step_size=0.1, epsilon=0.2, env=env)
@@ -37,16 +37,14 @@ def play_game():
 
 if training:
     print("Training the agent...")
-    num_episodes = 10
+    num_episodes = 100
     wins = np.zeros(num_episodes)
     losses = np.zeros(num_episodes)
     draws = np.zeros(num_episodes)
-    rewards = []
 
     for episode in range(num_episodes):
         env.reset()
-        total_reward = 0
-        print("Episode: " + str(episode))
+        print("Training episode: " + str(episode))
 
         while True:
             valid_moves = env.get_valid_moves(env.player)
@@ -54,15 +52,37 @@ if training:
                 break
 
             action = agent.select_action(valid_moves)
+            old_state = deepcopy(env.board)
             next_state, reward = env.step(action, env.player)
 
-            total_reward += reward
-
-            agent.update_q_table(env.board, action, reward)
+            agent.update_q_table(old_state, action, reward, next_state, env.get_valid_moves(env.player))
 
             env.player *= -1
 
-        rewards.append(total_reward)
+        agent.epsilon = max(0.1, agent.epsilon * 0.99)
+
+    print("Training is done")
+    agent.save()
+    print("Agent saved")
+
+    dummy = Dummy(env)
+
+    for episode in range(num_episodes):
+        env.reset()
+        print("Playing episode: " + str(episode))
+
+        while True:
+            valid_moves = env.get_valid_moves(env.player)
+            if not valid_moves:
+                break
+
+            if env.player == -1:
+                action = agent.select_action(valid_moves)
+            else:
+                action = dummy.select_action(valid_moves)
+            next_state, _ = env.step(action, env.player)
+
+            env.player *= -1
 
         winner = env.check_game_winner()
         if winner == -1:
@@ -77,8 +97,6 @@ if training:
             wins[episode] = 0
             losses[episode] = 0
             draws[episode] = 1
-
-    print("Training is done")
 
     cumulative_wins = np.cumsum(wins)
     cumulative_losses = np.cumsum(losses)
@@ -98,9 +116,6 @@ if training:
     plot_filename = "learning_results.png"
     plt.savefig(plot_filename)
     print(f"Learning results saved as '{plot_filename}'")
-
-    agent.save()
-    print("Agent saved")
 else:
     agent.load('saved_table.pkl')
     play_game()
