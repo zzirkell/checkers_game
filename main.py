@@ -1,15 +1,14 @@
-import matplotlib.pyplot as plt
+import math
 
-from Dummy import Dummy
+import matplotlib.pyplot as plt
+import numpy as np
+
 from CheckersEnv import CheckersEnv
 from LearningAgent import LearningAgent
 
-# Initialize environment and learning agent
 env = CheckersEnv()
 agent = LearningAgent(step_size=0.1, epsilon=0.2, env=env)
-dummy = Dummy(env=env)
 training = True
-agentVsAgent = True
 
 
 def play_game():
@@ -38,72 +37,67 @@ def play_game():
 
 if training:
     print("Training the agent...")
-    num_episodes = 1000
+    num_episodes = 10
+    wins = np.zeros(num_episodes)
+    losses = np.zeros(num_episodes)
+    draws = np.zeros(num_episodes)
     rewards = []
 
     for episode in range(num_episodes):
         env.reset()
         total_reward = 0
-        done = False
         print("Episode: " + str(episode))
 
-        while not done:
-            if agentVsAgent:
-                valid_moves = env.get_valid_moves(env.player)
-                if not valid_moves:
-                    break
+        while True:
+            valid_moves = env.get_valid_moves(env.player)
+            if not valid_moves:
+                break
 
-                action = agent.select_action(valid_moves)
-                next_state, reward = env.step(action, env.player)
+            action = agent.select_action(valid_moves)
+            next_state, reward = env.step(action, env.player)
 
-                total_reward += reward
+            total_reward += reward
 
-                next_valid_moves = env.get_valid_moves(-env.player)
-                if episode == 10:
-                    agent.update_q_table(env.board, action, reward, next_state, next_valid_moves, True)
-                else:
-                    agent.update_q_table(env.board, action, reward, next_state, next_valid_moves, False)
+            agent.update_q_table(env.board, action, reward)
 
-                env.player *= -1
-            else:
-                if env.player == 1:
-                    valid_moves = env.get_valid_moves(env.player)
-                    if not valid_moves:
-                        print("Player 1 lost")
-                        break
-
-                    action = agent.select_action(valid_moves)
-                    next_state, reward = env.step(action, env.player)
-
-                    total_reward += reward
-
-                    next_valid_moves = env.get_valid_moves(-env.player)
-                    if episode == 100:
-                        agent.update_q_table(env.board, action, reward, next_state, next_valid_moves, True)
-                    else:
-                        agent.update_q_table(env.board, action, reward, next_state, next_valid_moves, False)
-                else:
-                    valid_moves = env.get_valid_moves(env.player)
-                    if not valid_moves:
-                        print("Player -1 lost")
-                        break
-
-                    action = dummy.select_action(valid_moves)
-                    next_state, reward = env.step(action, env.player)
-
-                env.player *= -1
+            env.player *= -1
 
         rewards.append(total_reward)
 
+        winner = env.check_game_winner()
+        if winner == -1:
+            wins[episode] = 1
+            losses[episode] = 0
+            draws[episode] = 0
+        elif winner == 1:
+            wins[episode] = 0
+            losses[episode] = 1
+            draws[episode] = 0
+        else:
+            wins[episode] = 0
+            losses[episode] = 0
+            draws[episode] = 1
+
     print("Training is done")
 
-    plt.plot(rewards, color="red")
-    plt.xlabel("Episode")
-    plt.ylabel("Total Reward")
-    plt.title("Learning Curve")
-    plot_filename = "learning_curve.png"
+    cumulative_wins = np.cumsum(wins)
+    cumulative_losses = np.cumsum(losses)
+    cumulative_draws = np.cumsum(draws)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(cumulative_wins, label='Wins', color='red')
+    plt.plot(cumulative_losses, label='Losses', color='blue')
+    plt.plot(cumulative_draws, label='Draws', color='green')
+    plt.xlabel('Episodes')
+    plt.ylabel('Results')
+    plt.title('Learning Agent Performance')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    plot_filename = "learning_results.png"
     plt.savefig(plot_filename)
-    print(f"Learning curve saved as '{plot_filename}'")
+    print(f"Learning results saved as '{plot_filename}'")
 
     agent.save()
     print("Agent saved")
