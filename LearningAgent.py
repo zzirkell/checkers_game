@@ -1,7 +1,5 @@
-import numpy as np
 import random
 import pickle
-from copy import deepcopy
 
 
 class LearningAgent:
@@ -24,19 +22,9 @@ class LearningAgent:
         return tuple(tuple(row) for row in board)
 
     def select_action(self, valid_moves):
-        # if random.random() < self.epsilon:
-        #     return random.choice(valid_moves)
-        #
-        # state_key = self.state_to_key(self.env.board)
-        # q_values = [self.q_table.get((state_key, tuple(move)), 0) for move in valid_moves]
-        # max_q = max(q_values)
-        # best_moves = [valid_moves[i] for i, q in enumerate(q_values) if q == max_q]
-        # return random.choice(best_moves)
         if random.uniform(0, 1) < self.epsilon:
-            # Explore: choose random move
             return random.choice(valid_moves)
         else:
-            # Exploit: choose the best move
             state_key = self.state_to_key(self.env.board)
             q_values = [self.q_table.get((state_key, tuple(move)), 0) for move in valid_moves]
             max_q = max(q_values)
@@ -47,7 +35,9 @@ class LearningAgent:
         state_key = self.state_to_key(state)
         next_state_key = self.state_to_key(next_state)
 
-        # Get current Q-value
+        if debug:
+            print("Debug iteration")
+
         current_q = self.q_table.get((state_key, tuple(last_move)), 0)
 
         if next_valid_moves:
@@ -55,9 +45,5 @@ class LearningAgent:
         else:
             future_q = 0
 
-        # Q-learning update
         new_q = current_q + self.step_size * (reward + 0.9 * future_q - current_q)
         self.q_table[(state_key, tuple(last_move))] = new_q
-
-        if debug:
-            print(f"Updated Q-value for {state_key}, move {last_move}: {new_q}")

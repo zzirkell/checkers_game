@@ -59,7 +59,7 @@ if training:
 
             env.player *= -1
 
-        agent.epsilon = max(0.1, agent.epsilon * 0.99)
+        agent.epsilon = max(0.1, agent.epsilon - 0.001)
 
     print("Training is done")
     agent.save()
@@ -67,7 +67,7 @@ if training:
 
     dummy = Dummy(env)
 
-    for episode in range(num_episodes):
+    for episode in range(100):
         env.reset()
         print("Playing episode: " + str(episode))
 
@@ -76,7 +76,7 @@ if training:
             if not valid_moves:
                 break
 
-            if env.player == -1:
+            if env.player == 1:
                 action = agent.select_action(valid_moves)
             else:
                 action = dummy.select_action(valid_moves)
@@ -85,11 +85,11 @@ if training:
             env.player *= -1
 
         winner = env.check_game_winner()
-        if winner == -1:
+        if winner == 1:
             wins[episode] = 1
             losses[episode] = 0
             draws[episode] = 0
-        elif winner == 1:
+        elif winner == -1:
             wins[episode] = 0
             losses[episode] = 1
             draws[episode] = 0
@@ -117,5 +117,7 @@ if training:
     plt.savefig(plot_filename)
     print(f"Learning results saved as '{plot_filename}'")
 else:
+    print("Loading the agent...")
     agent.load('saved_table.pkl')
+    print("Agent is ready")
     play_game()
