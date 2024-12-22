@@ -20,7 +20,7 @@ class DQLAgent:
 
     def _build_model(self):
         model = keras.Sequential()
-        model.add(keras.layers.Dense(128, input_shape=self.state_shape, activation='relu'))
+        model.add(keras.layers.Dense(128, input_shape=(36,), activation='relu'))
         model.add(keras.layers.Dense(128, activation='relu'))
         model.add(keras.layers.Dense(self.action_size, activation='linear'))
         model.compile(loss='mse', optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate))
@@ -34,7 +34,10 @@ class DQLAgent:
             return random.choice(valid_moves)
         q_values = self.model.predict(state, verbose=0)[0]
         move_q_values = [q_values[move] for move in valid_moves]
-        best_move = valid_moves[np.argmax(move_q_values)]
+        a = np.argmax(move_q_values) // 4
+        if a > len(valid_moves):
+            print("A")
+        best_move = valid_moves[a]
         return best_move
 
     def replay(self, batch_size=64):
