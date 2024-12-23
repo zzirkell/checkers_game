@@ -5,10 +5,12 @@ from CheckersEnv import CheckersEnv
 from DQLAgent import DQLAgent
 from Dummy import Dummy
 from LearningAgent import LearningAgent
+from CheckersGUI import CheckersGUI
 from copy import deepcopy
 
 env = CheckersEnv()
 training = False
+playWithGui = True
 
 # Q agent
 agent1 = LearningAgent(step_size=0.1, epsilon=0.2, env=env)
@@ -23,70 +25,74 @@ dummy = Dummy(env)
 
 
 def play_game():
-    player1 = agent2
-    playerNeg1 = agent1
+    if not playWithGui:
+        player1 = agent2
+        playerNeg1 = agent1
 
-    num_episodes = 100
-    wins = np.zeros(num_episodes)
-    losses = np.zeros(num_episodes)
-    draws = np.zeros(num_episodes)
+        num_episodes = 100
+        wins = np.zeros(num_episodes)
+        losses = np.zeros(num_episodes)
+        draws = np.zeros(num_episodes)
 
-    for episode in range(num_episodes):
-        env.reset()
-        print("Playing episode: " + str(episode))
+        for episode in range(num_episodes):
+            env.reset()
+            print("Playing episode: " + str(episode))
 
-        while True:
-            valid_moves = env.get_valid_moves(env.player)
-            if not valid_moves:
-                break
+            while True:
+                valid_moves = env.get_valid_moves(env.player)
+                if not valid_moves:
+                    break
 
-            state = env.board.flatten()
-            if env.player == 1:
-                if isinstance(player1, DQLAgent):
-                    action = player1.select_action(state, valid_moves)
+                state = env.board.flatten()
+                if env.player == 1:
+                    if isinstance(player1, DQLAgent):
+                        action = player1.select_action(state, valid_moves)
+                    else:
+                        action = player1.select_action(valid_moves)
                 else:
-                    action = player1.select_action(valid_moves)
+                    if isinstance(playerNeg1, DQLAgent):
+                        action = playerNeg1.select_action(state, valid_moves)
+                    else:
+                        action = playerNeg1.select_action(valid_moves)
+
+                env.step(action, env.player)
+                env.player *= -1
+
+            winner = env.check_game_winner()
+            if winner == 1:
+                wins[episode] = 1
+                losses[episode] = 0
+                draws[episode] = 0
+            elif winner == -1:
+                wins[episode] = 0
+                losses[episode] = 1
+                draws[episode] = 0
             else:
-                if isinstance(playerNeg1, DQLAgent):
-                    action = playerNeg1.select_action(state, valid_moves)
-                else:
-                    action = playerNeg1.select_action(valid_moves)
+                wins[episode] = 0
+                losses[episode] = 0
+                draws[episode] = 1
 
-            env.step(action, env.player)
-            env.player *= -1
+        cumulative_wins = np.cumsum(wins)
+        cumulative_losses = np.cumsum(losses)
+        cumulative_draws = np.cumsum(draws)
 
-        winner = env.check_game_winner()
-        if winner == 1:
-            wins[episode] = 1
-            losses[episode] = 0
-            draws[episode] = 0
-        elif winner == -1:
-            wins[episode] = 0
-            losses[episode] = 1
-            draws[episode] = 0
-        else:
-            wins[episode] = 0
-            losses[episode] = 0
-            draws[episode] = 1
+        plt.figure(figsize=(10, 6))
+        plt.plot(cumulative_wins, label='Wins', color='red')
+        plt.plot(cumulative_losses, label='Losses', color='blue')
+        plt.plot(cumulative_draws, label='Draws', color='green')
+        plt.xlabel('Episodes')
+        plt.ylabel('Results')
+        plt.title('Learning Agent Performance')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
-    cumulative_wins = np.cumsum(wins)
-    cumulative_losses = np.cumsum(losses)
-    cumulative_draws = np.cumsum(draws)
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(cumulative_wins, label='Wins', color='red')
-    plt.plot(cumulative_losses, label='Losses', color='blue')
-    plt.plot(cumulative_draws, label='Draws', color='green')
-    plt.xlabel('Episodes')
-    plt.ylabel('Results')
-    plt.title('Learning Agent Performance')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-    plot_filename = "learning_results.png"
-    plt.savefig(plot_filename)
-    print(f"Learning results saved as '{plot_filename}'")
+        plot_filename = "learning_results.png"
+        plt.savefig(plot_filename)
+        print(f"Learning results saved as '{plot_filename}'")
+    else:
+        player1 = agent2
+        CheckersGUI(env, player1)
 
 
 def train():
@@ -152,9 +158,9 @@ def train():
 
 
 def load_agents():
-    print("Loading the Q agent...")
-    agent1.load('saved_table.pkl')
-    print("Q agent is ready")
+    # print("Loading the Q agent...")
+    # agent1.load('saved_table.pkl')
+    # print("Q agent is ready")
     print("Loading the DQL agent...")
     agent2.load('checkers_dql_weights_10.weights.h5')
     print("DQL agent is ready")

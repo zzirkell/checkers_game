@@ -21,6 +21,27 @@ class CheckersEnv:
         self.board = initialize_board()
         self.player = 1
 
+    def get_valid_moves_for_piece(self, piece, player):
+        moves = []
+        directions = [(1, -1), (1, 1)] if player == 1 else [(-1, -1), (-1, 1)]
+
+        row, col = piece
+
+        if self.board[row][col] == 2 * player:
+            directions = [(1, -1), (1, 1), (-1, -1), (-1, 1)]
+        for dr, dc in directions:
+            nr, nc = row + dr, col + dc
+            if 0 <= nr < 6 and 0 <= nc < 6 and self.board[nr][nc] == 0:
+                moves.append([row, col, nr, nc])
+
+            nr, nc = row + 2 * dr, col + 2 * dc
+            if 0 <= nr < 6 and 0 <= nc < 6:
+                blocking_piece = self.board[row + dr][col + dc]
+                if (blocking_piece == -player or blocking_piece == -player * 2) and self.board[nr][nc] == 0:
+                    moves.append([row, col, nr, nc])
+
+        return moves
+
     def get_valid_moves(self, player):
         moves = []
         directions = [(1, -1), (1, 1)] if player == 1 else [(-1, -1), (-1, 1)]

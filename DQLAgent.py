@@ -2,6 +2,7 @@ import random
 import numpy as np
 from collections import deque
 import tensorflow as tf
+from keras import Input
 from tensorflow import keras
 
 
@@ -20,7 +21,8 @@ class DQLAgent:
 
     def _build_model(self):
         model = keras.Sequential()
-        model.add(keras.layers.Dense(128, input_shape=(36,), activation='relu'))
+        # model.add(keras.layers.Dense(128, input_shape=(36,), activation='relu'))
+        model.add(Input(shape=(36,)))
         model.add(keras.layers.Dense(128, activation='relu'))
         model.add(keras.layers.Dense(self.action_size, activation='linear'))
         model.compile(loss='mse', optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate))
