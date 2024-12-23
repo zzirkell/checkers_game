@@ -44,13 +44,14 @@ class CheckersEnv:
 
     def get_valid_moves(self, player):
         moves = []
-        directions = [(1, -1), (1, 1)] if player == 1 else [(-1, -1), (-1, 1)]
 
         for r in range(6):
             for c in range(6):
                 if self.board[r][c] == player or self.board[r][c] == 2 * player:
                     if self.board[r][c] == 2 * player:
                         directions = [(1, -1), (1, 1), (-1, -1), (-1, 1)]
+                    else:
+                        directions = [(1, -1), (1, 1)] if player == 1 else [(-1, -1), (-1, 1)]
                     for dr, dc in directions:
                         nr, nc = r + dr, c + dc
                         if 0 <= nr < 6 and 0 <= nc < 6 and self.board[nr][nc] == 0:

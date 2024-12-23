@@ -158,9 +158,9 @@ def train():
 
 
 def load_agents():
-    # print("Loading the Q agent...")
-    # agent1.load('saved_table.pkl')
-    # print("Q agent is ready")
+    print("Loading the Q agent...")
+    agent1.load('saved_table.pkl')
+    print("Q agent is ready")
     print("Loading the DQL agent...")
     agent2.load('checkers_dql_weights_10.weights.h5')
     print("DQL agent is ready")
