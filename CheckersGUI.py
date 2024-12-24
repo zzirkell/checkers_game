@@ -79,8 +79,12 @@ class CheckersGUI:
             self.env.step(move, -1)
             self.selected_piece = None
             self.valid_moves = []
-            self.check_game_state()
-            self.agent_turn()
+            if self.check_game_state():
+                self.agent_turn()
+                return
+            else:
+                self.agent_turn()
+                self.check_game_state()
         else:
             self.selected_piece = None
             self.valid_moves = []
@@ -101,3 +105,5 @@ class CheckersGUI:
             else:
                 print("YOU WON!")
             self.env.reset()
+            return True
+        return False

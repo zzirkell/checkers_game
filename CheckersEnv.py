@@ -58,8 +58,8 @@ class CheckersEnv:
                             moves.append([r, c, nr, nc])
                         nr, nc = r + 2 * dr, c + 2 * dc
                         if 0 <= nr < 6 and 0 <= nc < 6:
-                            if self.board[r + dr][c + dc] == -player and self.board[nr][nc] == 0:
-                                moves.append([r, c, nr, nc])
+                            if (self.board[r + dr][c + dc] == -player or self.board[r + dr][c + dc] == -2 * player) and self.board[nr][nc] == 0:
+                                return [[r, c, nr, nc]]
         return moves
 
     def check_captured(self, action):
@@ -98,12 +98,20 @@ class CheckersEnv:
         if abs(end_row - start_row) == 2:
             reward = 10
 
+        if end_row == 5:
+            reward += 10
+
         winner = self.check_game_winner()
 
         if winner == player:
             reward += 100
         elif winner == -player:
             reward -= 100
+
+        if not self.get_valid_moves(player):
+            reward = -100
+        if not self.get_valid_moves(-player):
+            reward = 100
 
         return self.board, reward
 

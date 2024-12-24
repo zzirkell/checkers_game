@@ -16,8 +16,10 @@ class DQLAgent:
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
         self.learning_rate = learning_rate
-        self.memory = deque(maxlen=2000)
+        self.memory = deque(maxlen=10000)
         self.model = self._build_model()
+        self.target_model = keras.models.clone_model(self.model)
+        self.target_model.set_weights(self.model.get_weights())
 
     def _build_model(self):
         model = keras.Sequential()
@@ -42,19 +44,22 @@ class DQLAgent:
         best_move = valid_moves[a]
         return best_move
 
-    def replay(self, batch_size=64):
+    def replay(self, batch_size=64, episode=0):
         if len(self.memory) < batch_size:
             return
         minibatch = random.sample(self.memory, batch_size)
         for state, action, reward, next_state, done in minibatch:
             target = reward
             if not done:
-                target += self.gamma * np.max(self.model.predict(next_state, verbose=0)[0])
+                target += self.gamma * np.max(self.target_model.predict(next_state, verbose=0)[0])
             target_f = self.model.predict(state, verbose=0)
             target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+            self.model.fit(state, target_f, epochs=8, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        if episode % 10 == 0:
+            self.target_model.set_weights(self.model.get_weights())
 
     def load(self, path):
         self.model.load_weights(path)
