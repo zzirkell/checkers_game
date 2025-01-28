@@ -13,7 +13,7 @@ def play_game(num_episodes=1000):
     """Playing the game either agent vs agent or agent vs player"""
     if not playWithGui:
         player1 = q_agent
-        playerNeg1 = dummy
+        playerNeg1 = q_agent
 
         wins = np.zeros(num_episodes)
         losses = np.zeros(num_episodes)
@@ -83,7 +83,7 @@ def train(num_episodes=1000):
 
             action = q_agent.select_action(valid_moves)
             old_state = deepcopy(env.board)
-            next_state, reward = env.step(action, env.player)
+            next_state, reward, _ = env.step(action, env.player)
 
             q_agent.update_q_table(old_state, action, reward, next_state, env.get_valid_moves(env.player))
 
@@ -95,38 +95,38 @@ def train(num_episodes=1000):
     q_agent.save()
     print("Q agent is saved")
 
-    print("Training the DQL agent...")
-    for episode in range(num_episodes):
-        print("Episode " + str(episode))
-
-        env.reset()
-        state = env.board.flatten()
-        state = np.reshape(state, [1, state_shape[1]])
-        while True:
-            # dql turn
-            valid_moves = env.get_valid_moves(env.player)
-            if not valid_moves:
-                break
-
-            action = dql_agent.select_action(state, valid_moves)
-            _, reward, done = env.step(action, env.player)
-
-            # dummy turn
-            valid_moves = env.get_valid_moves(-env.player)
-            if not valid_moves:
-                break
-
-            action = dummy.select_action(valid_moves)
-            next_state, _, _ = env.step(action, -env.player)
-            next_state = np.reshape(next_state.flatten(), [1, state_shape[1]])
-
-            dql_agent.remember(state, action, reward, next_state, done)
-
-        dql_agent.replay(batch_size=64, episode=episode)
-        if episode % 100 == 0:
-            dql_agent.save(f"checkers_dql_weights_{episode}.weights.h5")
-
-    print("DQL training is done")
+    # print("Training the DQL agent...")
+    # for episode in range(num_episodes):
+    #     print("Episode " + str(episode))
+    #
+    #     env.reset()
+    #     state = env.board.flatten()
+    #     state = np.reshape(state, [1, state_shape[1]])
+    #     while True:
+    #         # dql turn
+    #         valid_moves = env.get_valid_moves(env.player)
+    #         if not valid_moves:
+    #             break
+    #
+    #         action = dql_agent.select_action(state, valid_moves)
+    #         _, reward, done = env.step(action, env.player)
+    #
+    #         # dummy turn
+    #         valid_moves = env.get_valid_moves(-env.player)
+    #         if not valid_moves:
+    #             break
+    #
+    #         action = dummy.select_action(valid_moves)
+    #         next_state, _, _ = env.step(action, -env.player)
+    #         next_state = np.reshape(next_state.flatten(), [1, state_shape[1]])
+    #
+    #         dql_agent.remember(state, action, reward, next_state, done)
+    #
+    #     dql_agent.replay(batch_size=64, episode=episode)
+    #     if episode % 100 == 0:
+    #         dql_agent.save(f"checkers_dql_weights_{episode}.weights.h5")
+    #
+    # print("DQL training is done")
 
 
 def load_agents():
@@ -141,10 +141,10 @@ def load_agents():
 
 env = CheckersEnv()
 training = False
-playWithGui = False
+playWithGui = True
 
 # Q agent
-q_agent = QAgent(step_size=0.2, epsilon=0, env=env)
+q_agent = QAgent(step_size=0.1, epsilon=0.2, env=env)
 
 # Deep Q agent
 state_shape = (1, 36)

@@ -81,8 +81,9 @@ class CheckersGUI:
         """When user selects piece on the board"""
         if self.env.board[row][col] == -1 or self.env.board[row][col] == -2:
             self.selected_piece = (row, col)
+            temp_moves = self.env.get_valid_moves(-1)
             self.valid_moves = [move for move in self.env.get_valid_moves_for_piece(self.selected_piece, -1) if
-                                move[:2] == [row, col]]
+                                move[:2] == [row, col] and move in temp_moves]
 
     def player_move(self, row, col):
         """Player makes a move"""

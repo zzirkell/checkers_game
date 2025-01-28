@@ -83,6 +83,7 @@ class CheckersEnv:
     def get_valid_moves(self, player):
         """Returns all valid moves for each piece"""
         moves = []
+        hasToEat = False
 
         for r in range(6):
             for c in range(6):
@@ -92,14 +93,19 @@ class CheckersEnv:
                     else:
                         directions = [(1, -1), (1, 1)] if player == 1 else [(-1, -1), (-1, 1)]
                     for dr, dc in directions:
-                        nr, nc = r + dr, c + dc
-                        if 0 <= nr < 6 and 0 <= nc < 6 and self.board[nr][nc] == 0:
-                            moves.append([r, c, nr, nc])
                         nr, nc = r + 2 * dr, c + 2 * dc
                         if 0 <= nr < 6 and 0 <= nc < 6:
                             if (self.board[r + dr][c + dc] == -player or self.board[r + dr][c + dc] == -2 * player) and \
                                     self.board[nr][nc] == 0:
-                                return [[r, c, nr, nc]]
+                                if not hasToEat:
+                                    hasToEat = True
+                                    moves = [[r, c, nr, nc]]
+                                else:
+                                    moves.append([r, c, nr, nc])
+                        nr, nc = r + dr, c + dc
+                        if not hasToEat:
+                            if 0 <= nr < 6 and 0 <= nc < 6 and self.board[nr][nc] == 0:
+                                moves.append([r, c, nr, nc])
         return moves
 
     def get_valid_moves_for_piece(self, piece, player):
