@@ -52,5 +52,5 @@ class QAgent:
 
     def save(self):
         """Saves the agent"""
-        with open('saved_table.pkl', 'wb') as f:
+        with open('saved_q_table.pkl', 'wb') as f:
             pickle.dump(self.q_table, f)

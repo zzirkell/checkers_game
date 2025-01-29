@@ -1,7 +1,6 @@
 import random
 import numpy as np
 from collections import deque
-import tensorflow as tf
 from keras import Input
 from tensorflow import keras
 

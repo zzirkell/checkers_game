@@ -95,44 +95,44 @@ def train(num_episodes=1000):
     q_agent.save()
     print("Q agent is saved")
 
-    # print("Training the DQL agent...")
-    # for episode in range(num_episodes):
-    #     print("Episode " + str(episode))
-    #
-    #     env.reset()
-    #     state = env.board.flatten()
-    #     state = np.reshape(state, [1, state_shape[1]])
-    #     while True:
-    #         # dql turn
-    #         valid_moves = env.get_valid_moves(env.player)
-    #         if not valid_moves:
-    #             break
-    #
-    #         action = dql_agent.select_action(state, valid_moves)
-    #         _, reward, done = env.step(action, env.player)
-    #
-    #         # dummy turn
-    #         valid_moves = env.get_valid_moves(-env.player)
-    #         if not valid_moves:
-    #             break
-    #
-    #         action = dummy.select_action(valid_moves)
-    #         next_state, _, _ = env.step(action, -env.player)
-    #         next_state = np.reshape(next_state.flatten(), [1, state_shape[1]])
-    #
-    #         dql_agent.remember(state, action, reward, next_state, done)
-    #
-    #     dql_agent.replay(batch_size=64, episode=episode)
-    #     if episode % 100 == 0:
-    #         dql_agent.save(f"checkers_dql_weights_{episode}.weights.h5")
-    #
-    # print("DQL training is done")
+    print("Training the DQL agent...")
+    for episode in range(num_episodes):
+        print("Episode " + str(episode))
+
+        env.reset()
+        state = env.board.flatten()
+        state = np.reshape(state, [1, state_shape[1]])
+        while True:
+            # dql turn
+            valid_moves = env.get_valid_moves(env.player)
+            if not valid_moves:
+                break
+
+            action = dql_agent.select_action(state, valid_moves)
+            _, reward, done = env.step(action, env.player)
+
+            # dummy turn
+            valid_moves = env.get_valid_moves(-env.player)
+            if not valid_moves:
+                break
+
+            action = dummy.select_action(valid_moves)
+            next_state, _, _ = env.step(action, -env.player)
+            next_state = np.reshape(next_state.flatten(), [1, state_shape[1]])
+
+            dql_agent.remember(state, action, reward, next_state, done)
+
+        dql_agent.replay(batch_size=64, episode=episode)
+        if episode % 100 == 0:
+            dql_agent.save(f"checkers_dql_weights_{episode}.weights.h5")
+
+    print("DQL training is done")
 
 
 def load_agents():
     """Loads agents from files if they were trained before"""
     print("Loading the Q agent...")
-    q_agent.load('saved_table.pkl')
+    q_agent.load('saved_q_table.pkl')
     print("Q agent is ready")
     print("Loading the DQL agent...")
     dql_agent.load('checkers_dql_weights_100.weights.h5')

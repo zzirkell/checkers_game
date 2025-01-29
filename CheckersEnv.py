@@ -42,7 +42,10 @@ class CheckersEnv:
         if abs(end_row - start_row) == 2:
             reward = 10
 
-        if end_row == 5:
+        if player == 1 and end_row == 5:
+            reward += 10
+
+        if player == -1 and end_row == 0:
             reward += 10
 
         if player == 1:
@@ -50,19 +53,20 @@ class CheckersEnv:
                 next_row = self.board[end_row + 1]
                 if end_col + 1 < 6:
                     if next_row[end_col + 1] == -player or next_row[end_col + 1] == -2 * player:
-                        reward -= 50
+                        reward -= 30
                 if end_col - 1 > 0:
                     if next_row[end_col - 1] == -player or next_row[end_col - 1] == -2 * player:
-                        reward -= 50
+                        reward -= 30
+
         if player == -1:
             if end_row - 1 > 0:
                 next_row = self.board[end_row - 1]
                 if end_col + 1 < 6:
                     if next_row[end_col + 1] == -player or next_row[end_col + 1] == -2 * player:
-                        reward -= 50
+                        reward -= 30
                 if end_col - 1 > 0:
                     if next_row[end_col - 1] == -player or next_row[end_col - 1] == -2 * player:
-                        reward -= 50
+                        reward -= 30
 
         winner = self.check_game_winner()
 
